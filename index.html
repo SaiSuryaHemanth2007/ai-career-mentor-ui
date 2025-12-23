@@ -16,228 +16,178 @@
 
     body {
       margin: 0;
-      background: linear-gradient(135deg, #020617, #020617);
-      color: #e5e7eb;
       height: 100vh;
+      background: linear-gradient(135deg, #020617, #020617);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e5e7eb;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      height: 90vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(14px);
+      border-radius: 16px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     header {
-      padding: 16px 24px;
-      background: #020617;
-      border-bottom: 1px solid #1e293b;
+      padding: 18px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 20px;
-      color: #38bdf8;
-    }
-
-    header p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      color: #94a3b8;
-    }
-
-    .chat-container {
+    #chat {
       flex: 1;
-      max-width: 900px;
-      margin: auto;
-      padding: 20px;
+      padding: 16px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-    }
-
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding-right: 10px;
+      gap: 12px;
     }
 
     .message {
-      margin-bottom: 14px;
-      display: flex;
-    }
-
-    .message.user {
-      justify-content: flex-end;
-    }
-
-    .message.ai {
-      justify-content: flex-start;
-    }
-
-    .bubble {
-      max-width: 70%;
-      padding: 14px 16px;
+      max-width: 80%;
+      padding: 12px 14px;
       border-radius: 14px;
+      line-height: 1.4;
       font-size: 14px;
-      line-height: 1.5;
     }
 
-    .message.user .bubble {
-      background: #2563eb;
+    .user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
       color: white;
       border-bottom-right-radius: 4px;
     }
 
-    .message.ai .bubble {
-      background: #020617;
-      border: 1px solid #1e293b;
+    .ai {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.08);
       border-bottom-left-radius: 4px;
     }
 
-    .input-area {
+    #input-area {
       display: flex;
       gap: 10px;
-      padding-top: 12px;
-      border-top: 1px solid #1e293b;
+      padding: 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
     }
 
     input {
       flex: 1;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      font-size: 14px;
+      padding: 12px;
       background: #020617;
-      color: #e5e7eb;
-      border: 1px solid #1e293b;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      color: white;
       outline: none;
     }
 
     button {
-      padding: 0 22px;
-      border-radius: 10px;
+      padding: 0 18px;
+      background: #2563eb;
       border: none;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #052e16;
+      border-radius: 10px;
+      color: white;
       font-weight: 600;
       cursor: pointer;
-      font-size: 14px;
     }
 
-    button:hover {
-      opacity: 0.9;
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
     }
 
-    /* Loader */
     .loader {
-      display: flex;
-      gap: 6px;
-      margin-left: 8px;
-    }
-
-    .loader span {
-      width: 8px;
-      height: 8px;
-      background: #94a3b8;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: white;
       border-radius: 50%;
-      animation: bounce 1.4s infinite both;
+      animation: spin 1s linear infinite;
+      align-self: flex-start;
     }
 
-    .loader span:nth-child(2) { animation-delay: .2s; }
-    .loader span:nth-child(3) { animation-delay: .4s; }
-
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0); }
-      40% { transform: scale(1); }
-    }
-
-    footer {
-      text-align: center;
-      padding: 10px;
-      font-size: 12px;
-      color: #64748b;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 
 <body>
 
-<header>
-  <h1>AI Career Mentor</h1>
-  <p>Personalized AI-powered career guidance for students & professionals</p>
-</header>
+  <div class="app">
+    <header>AI Career Mentor</header>
 
-<div class="chat-container">
-  <div id="messages" class="messages">
-    <div class="message ai">
-      <div class="bubble">
-        👋 Hello! I’m your AI Career Mentor.  
-        Tell me about your skills, interests, or goals.
+    <div id="chat">
+      <div class="message ai">
+        👋 Hi! Ask me anything about your career roadmap.
       </div>
+    </div>
+
+    <div id="input-area">
+      <input id="input" placeholder="Ask your career question..." />
+      <button id="sendBtn">Send</button>
     </div>
   </div>
 
-  <div class="input-area">
-    <input id="userInput" placeholder="Ask about careers, skills, roadmap..." />
-    <button onclick="sendMessage()">Send</button>
-  </div>
-</div>
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("sendBtn");
 
-<footer>
-  Microsoft Imagine Cup · AI Career Mentor MVP
-</footer>
+    function addMessage(text, type) {
+      const msg = document.createElement("div");
+      msg.className = `message ${type}`;
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
 
-<script>
-  const messages = document.getElementById("messages");
-  const input = document.getElementById("userInput");
+    function showLoader() {
+      const loader = document.createElement("div");
+      loader.className = "loader";
+      loader.id = "loader";
+      chat.appendChild(loader);
+      chat.scrollTop = chat.scrollHeight;
+    }
 
-  function addMessage(role, text) {
-    const msg = document.createElement("div");
-    msg.className = `message ${role}`;
+    function removeLoader() {
+      const loader = document.getElementById("loader");
+      if (loader) loader.remove();
+    }
 
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.textContent = text;
+    sendBtn.onclick = () => {
+      const text = input.value.trim();
+      if (!text) return;
 
-    msg.appendChild(bubble);
-    messages.appendChild(msg);
-    messages.scrollTop = messages.scrollHeight;
-  }
+      addMessage(text, "user");
+      input.value = "";
+      sendBtn.disabled = true;
 
-  function showLoader() {
-    const loaderMsg = document.createElement("div");
-    loaderMsg.className = "message ai";
-    loaderMsg.id = "loader";
+      showLoader();
 
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
+      // MOCK AI RESPONSE (backend comes later)
+      setTimeout(() => {
+        removeLoader();
+        addMessage("🚀 Great question! I’ll help you build a clear career roadmap step by step.", "ai");
+        sendBtn.disabled = false;
+      }, 1500);
+    };
 
-    const loader = document.createElement("div");
-    loader.className = "loader";
-    loader.innerHTML = "<span></span><span></span><span></span>";
-
-    bubble.appendChild(loader);
-    loaderMsg.appendChild(bubble);
-    messages.appendChild(loaderMsg);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  function removeLoader() {
-    const loader = document.getElementById("loader");
-    if (loader) loader.remove();
-  }
-
-  function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
-
-    addMessage("user", text);
-    input.value = "";
-
-    showLoader();
-
-    // MOCK AI RESPONSE (backend will replace this)
-    setTimeout(() => {
-      removeLoader();
-      addMessage("ai", "Great question! I’ll help you build a clear career roadmap 🚀");
-    }, 1500);
-  }
-</script>
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") sendBtn.click();
+    });
+  </script>
 
 </body>
 </html>
