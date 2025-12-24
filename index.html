@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #020617, #020617);
+      background: radial-gradient(circle at top, #020617, #000);
       color: #e5e7eb;
       display: flex;
       justify-content: center;
@@ -21,16 +21,16 @@
       width: 380px;
       background: #020617;
       border-radius: 14px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.6);
+      padding: 16px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
-      padding: 16px;
     }
 
     .header {
       text-align: center;
-      font-weight: bold;
       color: #38bdf8;
+      font-weight: bold;
       margin-bottom: 10px;
     }
 
@@ -42,45 +42,46 @@
 
     .bubble {
       padding: 10px 12px;
-      border-radius: 12px;
+      border-radius: 10px;
       margin-bottom: 8px;
-      max-width: 90%;
-      white-space: pre-wrap;
       font-size: 14px;
-    }
-
-    .bubble.ai {
-      background: #1e293b;
-      align-self: flex-start;
+      line-height: 1.4;
+      white-space: pre-wrap;
     }
 
     .bubble.user {
       background: #2563eb;
       align-self: flex-end;
+      color: white;
     }
 
-    .input-area {
+    .bubble.ai {
+      background: #1e293b;
+      color: #e5e7eb;
+    }
+
+    .input-row {
       display: flex;
       gap: 6px;
     }
 
     input {
       flex: 1;
-      padding: 10px;
-      border-radius: 10px;
+      padding: 8px;
+      border-radius: 8px;
       border: none;
-      outline: none;
       background: #020617;
       color: #e5e7eb;
+      outline: none;
       border: 1px solid #1e293b;
     }
 
     button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
       background: #2563eb;
       color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
       cursor: pointer;
     }
 
@@ -89,11 +90,26 @@
     }
 
     #roadmapBtn {
-      display: none;
       margin-top: 8px;
       background: #0f172a;
-      border: 1px solid #38bdf8;
+      border: 1px solid #334155;
       color: #38bdf8;
+      display: none;
+    }
+
+    .follow-btn {
+      margin: 4px 4px 0 0;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: #020617;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .follow-btn:hover {
+      background: #0f172a;
     }
   </style>
 </head>
@@ -108,7 +124,9 @@
 
     <button id="roadmapBtn" onclick="toggleRoadmap()">Show Full Roadmap</button>
 
-    <div class="input-area">
+    <div id="followUps" style="display:none;"></div>
+
+    <div class="input-row">
       <input id="input" placeholder="Ask your career question..." />
       <button onclick="sendMessage()">Send</button>
     </div>
@@ -118,7 +136,9 @@
     const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
 
     let fullRoadmap = "";
+    let summaryText = "";
     let isRoadmapVisible = false;
+    let roadmapBubble = null;
 
     function addMessage(role, text) {
       const div = document.createElement("div");
@@ -126,6 +146,22 @@
       div.innerText = text;
       document.getElementById("messages").appendChild(div);
       div.scrollIntoView({ behavior: "smooth" });
+      return div;
+    }
+
+    function showFollowUps() {
+      const followUps = document.getElementById("followUps");
+      followUps.innerHTML = `
+        <button class="follow-btn" onclick="quickAsk('Suggest resume-ready AI projects')">📂 Projects</button>
+        <button class="follow-btn" onclick="quickAsk('Which certifications should I start with?')">🎓 Certifications</button>
+        <button class="follow-btn" onclick="quickAsk('How can I get AI internships?')">💼 Internships</button>
+      `;
+      followUps.style.display = "block";
+    }
+
+    function quickAsk(text) {
+      document.getElementById("input").value = text;
+      sendMessage();
     }
 
     async function sendMessage() {
@@ -136,7 +172,7 @@
       addMessage("user", text);
       input.value = "";
 
-      addMessage("ai", "Thinking...");
+      const thinkingBubble = addMessage("ai", "Thinking...");
 
       try {
         const response = await fetch(API_URL, {
@@ -149,37 +185,41 @@
         });
 
         const data = await response.json();
+        thinkingBubble.remove();
 
-        // remove Thinking...
-        document.querySelector(".messages .bubble.ai:last-child").remove();
-
-        // show summary
-        addMessage("ai", data.summary);
-
+        summaryText = data.summary;
         fullRoadmap = data.detailed;
         isRoadmapVisible = false;
+
+        roadmapBubble = addMessage("ai", summaryText);
 
         const btn = document.getElementById("roadmapBtn");
         btn.innerText = "Show Full Roadmap";
         btn.style.display = "block";
 
+        showFollowUps();
+
       } catch (err) {
-        addMessage("ai", "❌ Backend connection failed");
+        thinkingBubble.innerText = "❌ Backend connection failed";
       }
     }
 
     function toggleRoadmap() {
       const btn = document.getElementById("roadmapBtn");
 
+      if (!roadmapBubble) return;
+
       if (!isRoadmapVisible) {
-        addMessage("ai", fullRoadmap);
+        roadmapBubble.innerText = fullRoadmap;
         btn.innerText = "Hide Full Roadmap";
         isRoadmapVisible = true;
       } else {
-        addMessage("ai", "📌 Roadmap hidden. Ask another question anytime.");
+        roadmapBubble.innerText = summaryText;
         btn.innerText = "Show Full Roadmap";
         isRoadmapVisible = false;
       }
+
+      roadmapBubble.scrollIntoView({ behavior: "smooth" });
     }
   </script>
 </body>
