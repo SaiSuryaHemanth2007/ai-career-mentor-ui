@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #020617, #0f172a);
+      background: radial-gradient(circle at top, #020617, #020617 40%, #000);
       color: #e5e7eb;
       display: flex;
       justify-content: center;
@@ -18,20 +18,18 @@
     }
 
     .chat-container {
-      width: 380px;
-      height: 520px;
+      width: 360px;
       background: #020617;
-      border-radius: 14px;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 0 25px rgba(0,0,0,0.5);
+      box-shadow: 0 0 30px rgba(0,0,0,0.6);
       overflow: hidden;
     }
 
     .header {
-      padding: 14px;
-      background: #020617;
       text-align: center;
+      padding: 14px;
       font-weight: bold;
       color: #38bdf8;
       border-bottom: 1px solid #1e293b;
@@ -41,61 +39,69 @@
       flex: 1;
       padding: 14px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
 
     .bubble {
-      max-width: 80%;
-      padding: 10px 12px;
+      padding: 10px 14px;
       border-radius: 12px;
+      margin-bottom: 10px;
+      max-width: 85%;
       font-size: 14px;
-      line-height: 1.4;
+      white-space: pre-wrap;
     }
 
-    .bubble.user {
+    .user {
       background: #2563eb;
-      align-self: flex-end;
-      color: #fff;
+      margin-left: auto;
     }
 
-    .bubble.ai {
+    .ai {
       background: #1e293b;
-      align-self: flex-start;
-      color: #e5e7eb;
     }
 
     .input-area {
       display: flex;
       padding: 10px;
       border-top: 1px solid #1e293b;
-      gap: 8px;
     }
 
     input {
       flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
       background: #020617;
+      border: 1px solid #334155;
       color: #e5e7eb;
-      border: 1px solid #1e293b;
+      padding: 10px;
+      border-radius: 10px;
+      outline: none;
     }
 
     button {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
+      margin-left: 8px;
       background: #2563eb;
+      border: none;
       color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
       cursor: pointer;
-      font-weight: bold;
     }
 
     button:hover {
       background: #1d4ed8;
+    }
+
+    .roadmap-btn {
+      margin: 8px auto 12px;
+      padding: 8px 14px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .roadmap-btn:hover {
+      background: #0284c7;
     }
   </style>
 </head>
@@ -120,9 +126,25 @@
     function addMessage(role, text) {
       const messages = document.getElementById("messages");
       const div = document.createElement("div");
-      div.className = "bubble " + role;
+      div.className = `bubble ${role}`;
       div.innerText = text;
       messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function addShowRoadmapButton(detailedText) {
+      const messages = document.getElementById("messages");
+
+      const btn = document.createElement("button");
+      btn.innerText = "📘 Show full roadmap";
+      btn.className = "roadmap-btn";
+
+      btn.onclick = () => {
+        addMessage("ai", detailedText);
+        btn.remove();
+      };
+
+      messages.appendChild(btn);
       messages.scrollTop = messages.scrollHeight;
     }
 
@@ -137,7 +159,7 @@
       addMessage("ai", "Thinking...");
 
       try {
-        const res = await fetch(API_URL, {
+        const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -146,11 +168,20 @@
           })
         });
 
-        const data = await res.json();
-        document.querySelector(".bubble.ai:last-child").innerText = data.advice;
-      } catch (err) {
-        document.querySelector(".bubble.ai:last-child").innerText =
-          "❌ Backend connection failed.";
+        const data = await response.json();
+
+        // remove "Thinking..."
+        document.querySelector(".messages .bubble.ai:last-child").remove();
+
+        // Show summary first
+        addMessage("ai", data.summary);
+
+        // Button to reveal full roadmap
+        addShowRoadmapButton(data.detailed);
+
+      } catch (error) {
+        addMessage("ai", "❌ Backend connection failed");
+        console.error(error);
       }
     }
   </script>
