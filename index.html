@@ -114,23 +114,14 @@
     </div>
 
     <div class="input-area">
-      <input id="input" placeholder="Ask your career question..." />
+      <input id="userInput" placeholder="Ask your career question..." />
       <button onclick="sendMessage()">Send</button>
     </div>
   </div>
 
-  <script>
-    // ✅ RENDER BACKEND URL
-    const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
+<script>
+const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
 
-    function addMessage(role, text) {
-      const messages = document.getElementById("messages");
-      const div = document.createElement("div");
-      div.className = `bubble ${role}`;
-      div.innerText = text;
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
-    }
 
     async function sendMessage() {
       const input = document.getElementById("input");
@@ -143,6 +134,17 @@
       // Loader
       addMessage("ai", "Thinking...");
 
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        interest: text,
+        education: "Not specified"
+      })
+    });
       try {
         const response = await fetch(API_URL, {
           method: "POST",
@@ -155,21 +157,18 @@
           })
         });
 
-        const data = await response.json();
+    const data = await response.json();
+    removeLoader();
+    addMessage("ai", data.advice || "No response received");
 
-        // remove loader
-        document.querySelector(".messages .bubble.ai:last-child").remove();
-
-        // ✅ Correct field from backend
-        addMessage("ai", data.advice);
-
-      } catch (error) {
-        document.querySelector(".messages .bubble.ai:last-child").remove();
-        addMessage("ai", "❌ Backend connection failed");
-        console.error(error);
-      }
-    }
-  </script>
+  } catch (error) {
+    removeLoader();
+    addMessage("ai", "❌ Backend connection failed");
+    console.error(error);
+  }
+}
+</script>
 
 </body>
 </html>
+
