@@ -5,122 +5,93 @@
   <title>AI Career Mentor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<<<<<<< HEAD
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-=======
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
->>>>>>> af0242a (Interactive MVP: connect frontend to Render backend)
-    }
-
     body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(circle at top, #0f172a, #020617);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a);
       color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
 
     .chat-container {
-      width: 360px;
-      height: 600px;
-      background: rgba(15, 23, 42, 0.9);
-      border-radius: 18px;
+      width: 380px;
+      height: 520px;
+      background: #020617;
+      border-radius: 14px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      box-shadow: 0 0 25px rgba(0,0,0,0.5);
       overflow: hidden;
     }
 
     .header {
-      padding: 16px;
+      padding: 14px;
+      background: #020617;
       text-align: center;
-<<<<<<< HEAD
-      font-weight: 700;
-      font-size: 18px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-=======
       font-weight: bold;
-      font-size: 18px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
->>>>>>> af0242a (Interactive MVP: connect frontend to Render backend)
+      color: #38bdf8;
+      border-bottom: 1px solid #1e293b;
     }
 
     .messages {
       flex: 1;
-      padding: 16px;
+      padding: 14px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
     .bubble {
       max-width: 80%;
-      padding: 12px 14px;
-      border-radius: 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
       font-size: 14px;
       line-height: 1.4;
-<<<<<<< HEAD
-      word-wrap: break-word;
-=======
->>>>>>> af0242a (Interactive MVP: connect frontend to Render backend)
     }
 
-    .ai {
-      background: #1e293b;
-      align-self: flex-start;
-    }
-
-    .user {
+    .bubble.user {
       background: #2563eb;
       align-self: flex-end;
+      color: #fff;
+    }
+
+    .bubble.ai {
+      background: #1e293b;
+      align-self: flex-start;
+      color: #e5e7eb;
     }
 
     .input-area {
       display: flex;
-      padding: 12px;
-<<<<<<< HEAD
-      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 10px;
+      border-top: 1px solid #1e293b;
       gap: 8px;
-=======
-      gap: 8px;
-      border-top: 1px solid rgba(255,255,255,0.1);
->>>>>>> af0242a (Interactive MVP: connect frontend to Render backend)
     }
 
     input {
       flex: 1;
-      padding: 10px 12px;
-      border-radius: 10px;
+      padding: 10px;
+      border-radius: 8px;
       border: none;
       outline: none;
       background: #020617;
       color: #e5e7eb;
+      border: 1px solid #1e293b;
     }
 
     button {
-      background: #2563eb;
-      border: none;
-      border-radius: 10px;
       padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #2563eb;
       color: white;
-<<<<<<< HEAD
-      font-weight: 600;
-=======
-      font-weight: bold;
->>>>>>> af0242a (Interactive MVP: connect frontend to Render backend)
       cursor: pointer;
+      font-weight: bold;
     }
 
     button:hover {
@@ -128,9 +99,8 @@
     }
   </style>
 </head>
-<body>
 
-<<<<<<< HEAD
+<body>
   <div class="chat-container">
     <div class="header">AI Career Mentor</div>
 
@@ -145,13 +115,12 @@
   </div>
 
   <script>
-    // ✅ RENDER BACKEND URL
     const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
 
     function addMessage(role, text) {
       const messages = document.getElementById("messages");
       const div = document.createElement("div");
-      div.className = `bubble ${role}`;
+      div.className = "bubble " + role;
       div.innerText = text;
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
@@ -160,115 +129,30 @@
     async function sendMessage() {
       const input = document.getElementById("input");
       const text = input.value.trim();
-
       if (!text) return;
 
-      // show user message
       addMessage("user", text);
       input.value = "";
 
-      // show loader
-      const loader = document.createElement("div");
-      loader.className = "bubble ai";
-      loader.id = "loader";
-      loader.innerText = "Thinking...";
-      document.getElementById("messages").appendChild(loader);
+      addMessage("ai", "Thinking...");
 
       try {
-        const response = await fetch(API_URL, {
+        const res = await fetch(API_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             interest: text,
             education_level: "Student"
           })
         });
 
-        const data = await response.json();
-
-        // remove loader
-        document.getElementById("loader").remove();
-
-        addMessage("ai", data.advice || "No response received");
-
-      } catch (error) {
-        document.getElementById("loader").remove();
-        addMessage("ai", "❌ Backend connection failed");
-        console.error(error);
+        const data = await res.json();
+        document.querySelector(".bubble.ai:last-child").innerText = data.advice;
+      } catch (err) {
+        document.querySelector(".bubble.ai:last-child").innerText =
+          "❌ Backend connection failed.";
       }
     }
   </script>
-=======
-<div class="chat-container">
-  <div class="header">AI Career Mentor</div>
-
-  <div class="messages" id="messages">
-    <div class="bubble ai">
-      👋 Hi! Ask me anything about your career roadmap.
-    </div>
-  </div>
-
-  <div class="input-area">
-    <input id="input" placeholder="Ask your career question..." />
-    <button onclick="sendMessage()">Send</button>
-  </div>
-</div>
-
-<script>
-  // ✅ RENDER BACKEND URL (VERIFIED)
-  const API_URL =
-    "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
-
-  function addMessage(role, text) {
-    const messages = document.getElementById("messages");
-    const div = document.createElement("div");
-    div.className = `bubble ${role}`;
-    div.innerText = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  async function sendMessage() {
-    const input = document.getElementById("input");
-    const text = input.value.trim();
-    if (!text) return;
-
-    addMessage("user", text);
-    input.value = "";
-
-    const loader = document.createElement("div");
-    loader.className = "bubble ai";
-    loader.innerText = "Thinking...";
-    document.getElementById("messages").appendChild(loader);
-
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          interest: text,
-          education_level: "Student"
-        })
-      });
-
-      const data = await response.json();
-
-      loader.remove();
-      addMessage("ai", data.advice || "No response received");
-
-    } catch (error) {
-      loader.remove();
-      addMessage("ai", "❌ Backend connection failed");
-      console.error(error);
-    }
-  }
-</script>
->>>>>>> af0242a (Interactive MVP: connect frontend to Render backend)
-
 </body>
 </html>
-
