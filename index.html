@@ -58,6 +58,7 @@
       border-radius: 14px;
       font-size: 14px;
       line-height: 1.4;
+      word-wrap: break-word;
     }
 
     .ai {
@@ -68,12 +69,6 @@
     .user {
       background: #2563eb;
       align-self: flex-end;
-    }
-
-    .loader {
-      font-size: 13px;
-      opacity: 0.7;
-      font-style: italic;
     }
 
     .input-area {
@@ -91,6 +86,7 @@
       outline: none;
       background: #020617;
       color: #e5e7eb;
+      font-size: 14px;
     }
 
     button {
@@ -123,46 +119,57 @@
     </div>
   </div>
 
-<script>
-const API_URL = "https://ai-career-mentor-api-hemanth.azurewebsites.net/chat";
+  <script>
+    // ✅ RENDER BACKEND URL
+    const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
 
-async function sendMessage() {
-  const input = document.getElementById("userInput");
-  const text = input.value.trim();
-  if (!text) return;
-
-  addMessage("user", text);
-  input.value = "";
-
-  showLoader();
-
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: text
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error("API error");
+    function addMessage(role, text) {
+      const messages = document.getElementById("messages");
+      const div = document.createElement("div");
+      div.className = `bubble ${role}`;
+      div.innerText = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
     }
 
-    const data = await response.json();
-    removeLoader();
-    addMessage("ai", data.reply || "No response received");
+    async function sendMessage() {
+      const input = document.getElementById("input");
+      const text = input.value.trim();
+      if (!text) return;
 
-  } catch (error) {
-    removeLoader();
-    addMessage("error", "❌ Backend connection failed");
-    console.error(error);
-  }
-}
-</script>
+      addMessage("user", text);
+      input.value = "";
 
+      // Loader
+      addMessage("ai", "Thinking...");
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            interest: text,
+            education_level: "Student"
+          })
+        });
+
+        const data = await response.json();
+
+        // remove loader
+        document.querySelector(".messages .bubble.ai:last-child").remove();
+
+        // ✅ Correct field from backend
+        addMessage("ai", data.advice);
+
+      } catch (error) {
+        document.querySelector(".messages .bubble.ai:last-child").remove();
+        addMessage("ai", "❌ Backend connection failed");
+        console.error(error);
+      }
+    }
+  </script>
 
 </body>
 </html>
