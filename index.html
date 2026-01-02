@@ -140,6 +140,11 @@
       return div;
     }
 
+    function extractTitle(roadmapText) {
+      const match = roadmapText.match(/\*\*(.*?)Career Roadmap\*\*/);
+      return match ? match[1] + "Career Roadmap" : null;
+    }
+
     async function sendMessage() {
       const input = document.getElementById("input");
       const text = input.value.trim();
@@ -156,7 +161,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             interest: text,
-            education_level: "Student"
+            education_level: "BTech"
           })
         });
 
@@ -167,7 +172,12 @@
         fullRoadmap = data.detailed;
         isRoadmapVisible = false;
 
-        roadmapBubble = addMessage("ai", summaryText);
+        const dynamicTitle = extractTitle(fullRoadmap);
+        const finalSummary = dynamicTitle
+          ? `${dynamicTitle}\n\n${summaryText}`
+          : summaryText;
+
+        roadmapBubble = addMessage("ai", finalSummary);
 
         const btn = document.getElementById("roadmapBtn");
         btn.innerText = "Show Full Roadmap";
@@ -188,7 +198,10 @@
         btn.innerText = "Hide Full Roadmap";
         isRoadmapVisible = true;
       } else {
-        roadmapBubble.innerText = summaryText;
+        const dynamicTitle = extractTitle(fullRoadmap);
+        roadmapBubble.innerText = dynamicTitle
+          ? `${dynamicTitle}\n\n${summaryText}`
+          : summaryText;
         btn.innerText = "Show Full Roadmap";
         isRoadmapVisible = false;
       }
