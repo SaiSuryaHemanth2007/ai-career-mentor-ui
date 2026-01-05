@@ -114,7 +114,8 @@
       border-color: #2563eb;
     }
 
-    #roadmapBtn {
+    #roadmapBtn,
+    #pdfBtn {
       width: 100%;
       margin-top: 8px;
       padding: 10px;
@@ -124,6 +125,34 @@
       border-radius: 8px;
       cursor: pointer;
       display: none;
+    }
+
+    /* PRINT / PDF STYLES */
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+
+      .chat-container {
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+      }
+
+      .controls,
+      .header,
+      #roadmapBtn,
+      #pdfBtn {
+        display: none !important;
+      }
+
+      .bubble {
+        background: white;
+        color: black;
+        border: none;
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -147,6 +176,7 @@
       </div>
 
       <button id="roadmapBtn" onclick="toggleRoadmap()">Show Full Roadmap</button>
+      <button id="pdfBtn" onclick="exportPDF()">📄 Export PDF</button>
 
       <div style="display:flex; margin-top:8px;">
         <input id="input" placeholder="Ask your career question..." />
@@ -156,9 +186,10 @@
   </div>
 
   <script>
-    const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
+    const API_URL =
+      "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
 
-    let selectedDuration = 2; // default
+    let selectedDuration = 2;
     let summaryText = "";
     let fullRoadmap = "";
     let isRoadmapVisible = false;
@@ -211,9 +242,8 @@
 
         roadmapBubble = addMessage("ai", summaryText);
 
-        const btn = document.getElementById("roadmapBtn");
-        btn.innerText = "Show Full Roadmap";
-        btn.style.display = "block";
+        document.getElementById("roadmapBtn").style.display = "block";
+        document.getElementById("pdfBtn").style.display = "block";
 
       } catch (err) {
         thinking.innerText = "Backend connection failed.";
@@ -236,6 +266,11 @@
       }
 
       roadmapBubble.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function exportPDF() {
+      if (!roadmapBubble) return;
+      window.print();
     }
   </script>
 </body>
