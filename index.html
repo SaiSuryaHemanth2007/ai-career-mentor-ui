@@ -90,6 +90,28 @@
       color: white;
     }
 
+    .duration {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .duration button {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+
+    .duration button.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
     #roadmapBtn {
       width: 100%;
       margin-top: 8px;
@@ -113,7 +135,16 @@
     </div>
 
     <div class="controls">
+
+      <!-- DURATION SELECTOR -->
+      <div class="duration">
+        <button class="active" onclick="setDuration(1)">1 Year</button>
+        <button onclick="setDuration(2)">2 Year</button>
+        <button onclick="setDuration(4)">4 Year</button>
+      </div>
+
       <button id="roadmapBtn" onclick="toggleRoadmap()">Show Full Roadmap</button>
+
       <div style="display:flex; margin-top:8px;">
         <input id="input" placeholder="Ask your career question..." />
         <button onclick="sendMessage()">Send</button>
@@ -124,16 +155,16 @@
   <script>
     const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
 
+    let selectedDuration = 2;
     let summaryText = "";
     let fullRoadmap = "";
     let isRoadmapVisible = false;
     let roadmapBubble = null;
 
-    function cleanBackendText(text) {
-      return text
-        .replace(/📘.*Career Roadmap\n*/gi, "")
-        .replace(/\*\*.*Career Roadmap\*\*\n*/gi, "")
-        .trim();
+    function setDuration(years) {
+      selectedDuration = years;
+      document.querySelectorAll(".duration button").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
     }
 
     function addMessage(role, text) {
@@ -147,48 +178,45 @@
 
     async function sendMessage() {
       const input = document.getElementById("input");
-      const interest = input.value.trim();
-      if (!interest) return;
+      const text = input.value.trim();
+      if (!text) return;
 
-      addMessage("user", interest);
+      addMessage("user", text);
       input.value = "";
 
-      const thinking = addMessage("ai", "Generating response...");
+      const thinking = addMessage("ai", "Generating roadmap...");
 
       try {
         const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            interest,
-            education_level: "BTech"
+            interest: text,
+            education_level: "Student",
+            duration: selectedDuration
           })
         });
 
         const data = await response.json();
         thinking.remove();
 
-        const title =
-          `📘 2-Year ${interest.charAt(0).toUpperCase() + interest.slice(1)} Career Roadmap`;
-
-        summaryText = `${title}\n\n${cleanBackendText(data.summary)}`;
-        fullRoadmap = `${title}\n\n${cleanBackendText(data.detailed)}`;
-
+        summaryText = data.summary;
+        fullRoadmap = data.detailed;
         isRoadmapVisible = false;
+
         roadmapBubble = addMessage("ai", summaryText);
 
         const btn = document.getElementById("roadmapBtn");
         btn.innerText = "Show Full Roadmap";
         btn.style.display = "block";
 
-      } catch {
+      } catch (err) {
         thinking.innerText = "Backend connection failed.";
       }
     }
 
     function toggleRoadmap() {
       if (!roadmapBubble) return;
-
       const btn = document.getElementById("roadmapBtn");
 
       if (!isRoadmapVisible) {
