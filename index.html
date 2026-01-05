@@ -90,9 +90,10 @@
       color: white;
     }
 
+    /* Duration selector */
     .duration {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 10px;
     }
 
@@ -104,6 +105,7 @@
       background: transparent;
       color: #94a3b8;
       cursor: pointer;
+      font-size: 13px;
     }
 
     .duration button.active {
@@ -138,9 +140,10 @@
 
       <!-- DURATION SELECTOR -->
       <div class="duration">
-        <button class="active" onclick="setDuration(1)">1 Year</button>
-        <button onclick="setDuration(2)">2 Year</button>
-        <button onclick="setDuration(4)">4 Year</button>
+        <button onclick="setDuration(1, this)">1 Year</button>
+        <button class="active" onclick="setDuration(2, this)">2 Year</button>
+        <button onclick="setDuration(3, this)">3 Year</button>
+        <button onclick="setDuration(4, this)">4 Year</button>
       </div>
 
       <button id="roadmapBtn" onclick="toggleRoadmap()">Show Full Roadmap</button>
@@ -155,16 +158,18 @@
   <script>
     const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
 
-    let selectedDuration = 2;
+    let selectedDuration = 2; // default
     let summaryText = "";
     let fullRoadmap = "";
     let isRoadmapVisible = false;
     let roadmapBubble = null;
 
-    function setDuration(years) {
+    function setDuration(years, btn) {
       selectedDuration = years;
-      document.querySelectorAll(".duration button").forEach(btn => btn.classList.remove("active"));
-      event.target.classList.add("active");
+      document
+        .querySelectorAll(".duration button")
+        .forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
     }
 
     function addMessage(role, text) {
@@ -217,6 +222,7 @@
 
     function toggleRoadmap() {
       if (!roadmapBubble) return;
+
       const btn = document.getElementById("roadmapBtn");
 
       if (!isRoadmapVisible) {
