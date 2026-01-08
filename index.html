@@ -9,73 +9,89 @@
     body {
       margin: 0;
       height: 100vh;
-      font-family: Arial, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: radial-gradient(circle at top, #0a2540, #020617);
       display: flex;
       justify-content: center;
       align-items: center;
-      color: white;
+      color: #e5e7eb;
     }
 
     .app {
-      width: 380px;
-      background: rgba(10, 20, 40, 0.9);
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 0 40px rgba(0,0,0,0.6);
+      width: 400px;
+      background: rgba(2, 6, 23, 0.95);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
     }
 
     h2 {
       text-align: center;
-      color: #3ea6ff;
-      margin-bottom: 10px;
+      color: #38bdf8;
+      margin-bottom: 12px;
+      font-weight: 600;
     }
 
     #chat {
-      height: 260px;
+      height: 300px;
       overflow-y: auto;
-      padding: 10px;
-      border-radius: 10px;
+      padding: 14px;
+      border-radius: 14px;
       background: #020617;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
     }
 
     .user-message {
-      text-align: right;
-      background: #2563eb;
-      color: white;
-      padding: 8px 10px;
-      border-radius: 12px;
+      align-self: flex-end;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 16px 16px 4px 16px;
       margin: 6px 0;
-      max-width: 85%;
-      margin-left: auto;
+      max-width: 80%;
+      font-size: 14px;
     }
 
     .ai-message {
-      text-align: left;
-      background: #111827;
+      align-self: flex-start;
+      background: #0f172a;
       color: #e5e7eb;
-      padding: 8px 10px;
-      border-radius: 12px;
+      padding: 12px 14px;
+      border-radius: 16px 16px 16px 4px;
       margin: 6px 0;
       max-width: 85%;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .error-message {
+      align-self: center;
+      background: rgba(255, 165, 0, 0.12);
+      color: #fbbf24;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-top: 8px;
+      font-size: 13px;
     }
 
     .years {
       display: flex;
-      justify-content: space-between;
-      margin: 8px 0;
+      gap: 6px;
+      margin-bottom: 10px;
     }
 
     .years button {
       flex: 1;
-      margin: 0 3px;
       padding: 6px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
-      background: #1f2933;
-      color: white;
+      background: #1f2937;
+      color: #e5e7eb;
       cursor: pointer;
+      font-size: 13px;
     }
 
     .years button.active {
@@ -89,19 +105,21 @@
 
     input {
       flex: 1;
-      padding: 8px;
-      border-radius: 8px;
+      padding: 10px;
+      border-radius: 10px;
       border: none;
       outline: none;
+      font-size: 14px;
     }
 
     button.send {
       background: #2563eb;
       border: none;
       color: white;
-      padding: 8px 14px;
-      border-radius: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
       cursor: pointer;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -135,7 +153,8 @@
 
     function setYear(year) {
       selectedYear = year;
-      document.querySelectorAll(".years button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".years button")
+        .forEach(btn => btn.classList.remove("active"));
       event.target.classList.add("active");
     }
 
@@ -157,32 +176,42 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
+    function addSoftError() {
+      const chat = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.className = "error-message";
+      div.innerText = "Service is warming up. Please try again.";
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
     async function sendMessage() {
       const input = document.getElementById("userInput");
       const text = input.value.trim();
       if (!text) return;
 
-      // ✅ SHOW USER MESSAGE
       addUserMessage(text);
       input.value = "";
 
       try {
-        const response = await fetch("https://salmon-pebble-0e8575a00.6.azurestaticapps.net/api/career-advice", {
+        // ✅ CORRECT FOR AZURE STATIC WEB APPS
+        const response = await fetch("/api/career-advice", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             interest: text,
-            education_level: "Diploma"
+            education_level: "Diploma",
+            duration: selectedYear
           })
         });
 
+        if (!response.ok) throw new Error("API error");
+
         const data = await response.json();
+        addAIMessage(data.detailed);
 
-        // ✅ SHOW AI RESPONSE
-        addAIMessage(data.summary + "\n\n" + data.detailed);
-
-      } catch (error) {
-        addAIMessage("⚠️ Unable to fetch roadmap. Please try again.");
+      } catch (err) {
+        addSoftError();
       }
     }
   </script>
