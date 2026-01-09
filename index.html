@@ -40,25 +40,28 @@
       flex: 1;
       padding: 16px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .bubble {
       background: #0f172a;
       border: 1px solid #1e293b;
       padding: 14px;
-      margin-bottom: 12px;
       border-radius: 12px;
       font-size: 14px;
       line-height: 1.5;
       white-space: pre-wrap;
+      max-width: 90%;
     }
 
-    .toggle {
-      margin-top: 10px;
-      color: #38bdf8;
-      cursor: pointer;
-      font-size: 13px;
-      text-decoration: underline;
+    .user-bubble {
+      align-self: flex-end;
+      background: #2563eb;
+      border: none;
+      color: white;
+      max-width: 75%;
     }
 
     .controls {
@@ -134,53 +137,68 @@
   </div>
 
   <script>
-    const API_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
+    const API_URL =
+      "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
+
     let selectedDuration = 2;
 
     function setDuration(year) {
       selectedDuration = year;
-      document.querySelectorAll(".duration button").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".duration button")
+        .forEach(b => b.classList.remove("active"));
       event.target.classList.add("active");
+    }
+
+    function addUserMessage(text) {
+      const div = document.createElement("div");
+      div.className = "bubble user-bubble";
+      div.innerText = text;
+      messages.appendChild(div);
+    }
+
+    function addAIMessage(summary, detailed) {
+      const div = document.createElement("div");
+      div.className = "bubble";
+      div.innerText =
+        "🧠 Short Description\n" +
+        summary +
+        "\n\n📘 Detailed Career Roadmap\n" +
+        detailed;
+      messages.appendChild(div);
     }
 
     async function sendMessage() {
       const input = document.getElementById("input");
+      const messages = document.getElementById("messages");
       const text = input.value.trim();
       if (!text) return;
+
+      // ✅ SHOW USER INPUT IMMEDIATELY
+      addUserMessage(text);
       input.value = "";
 
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.innerText = "Generating roadmap...";
-      document.getElementById("messages").appendChild(bubble);
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            interest: text,
+            education_level: "Student",
+            duration: selectedDuration
+          })
+        });
 
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          interest: text,
-          education_level: "Student"
-        })
-      });
+        const data = await res.json();
+        addAIMessage(data.summary, data.detailed);
+        messages.scrollTop = messages.scrollHeight;
 
-      const data = await res.json();
-
-      let expanded = false;
-      bubble.innerText = data.summary;
-
-      const toggle = document.createElement("div");
-      toggle.className = "toggle";
-      toggle.innerText = "Show full roadmap";
-
-      toggle.onclick = () => {
-        expanded = !expanded;
-        bubble.innerText = expanded ? data.detailed : data.summary;
-        toggle.innerText = expanded ? "Hide full roadmap" : "Show full roadmap";
-        bubble.appendChild(toggle);
-      };
-
-      bubble.appendChild(toggle);
-      bubble.scrollIntoView({ behavior: "smooth" });
+      } catch {
+        const err = document.createElement("div");
+        err.className = "bubble";
+        err.style.color = "#fbbf24";
+        err.innerText = "Service is warming up. Please try again.";
+        messages.appendChild(err);
+      }
     }
   </script>
 </body>
