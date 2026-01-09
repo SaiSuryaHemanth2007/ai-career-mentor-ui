@@ -64,6 +64,15 @@
       max-width: 75%;
     }
 
+    .toggle {
+      margin-top: 8px;
+      color: #38bdf8;
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: underline;
+      display: inline-block;
+    }
+
     .controls {
       padding: 12px;
       border-top: 1px solid #1e293b;
@@ -159,11 +168,28 @@
     function addAIMessage(summary, detailed) {
       const div = document.createElement("div");
       div.className = "bubble";
-      div.innerText =
-        "🧠 Short Description\n" +
-        summary +
-        "\n\n📘 Detailed Career Roadmap\n" +
-        detailed;
+
+      const summaryText = document.createElement("div");
+      summaryText.innerText = "🧠 Short Description\n" + summary;
+
+      const toggle = document.createElement("div");
+      toggle.className = "toggle";
+      toggle.innerText = "Show full roadmap";
+
+      const detailedText = document.createElement("div");
+      detailedText.style.display = "none";
+      detailedText.innerText = "\n📘 Detailed Career Roadmap\n" + detailed;
+
+      toggle.onclick = () => {
+        const isOpen = detailedText.style.display === "block";
+        detailedText.style.display = isOpen ? "none" : "block";
+        toggle.innerText = isOpen ? "Show full roadmap" : "Hide full roadmap";
+      };
+
+      div.appendChild(summaryText);
+      div.appendChild(toggle);
+      div.appendChild(detailedText);
+
       messages.appendChild(div);
     }
 
@@ -173,7 +199,6 @@
       const text = input.value.trim();
       if (!text) return;
 
-      // ✅ SHOW USER INPUT IMMEDIATELY
       addUserMessage(text);
       input.value = "";
 
