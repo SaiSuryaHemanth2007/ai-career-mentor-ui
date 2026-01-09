@@ -9,7 +9,7 @@
     body {
       margin: 0;
       height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: system-ui, sans-serif;
       background: radial-gradient(circle at top, #0a2540, #020617);
       display: flex;
       justify-content: center;
@@ -43,7 +43,7 @@
       margin-bottom: 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .user-message {
@@ -60,7 +60,7 @@
       align-self: flex-start;
       background: #0f172a;
       color: #e5e7eb;
-      padding: 12px 14px;
+      padding: 14px;
       border-radius: 16px 16px 16px 4px;
       max-width: 90%;
       font-size: 14px;
@@ -68,9 +68,21 @@
       white-space: pre-wrap;
     }
 
+    .ai-title {
+      font-weight: 600;
+      color: #38bdf8;
+      margin-bottom: 6px;
+    }
+
+    .ai-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #1e293b;
+    }
+
     .error-message {
       align-self: center;
-      background: rgba(255, 165, 0, 0.12);
+      background: rgba(255,165,0,0.15);
       color: #fbbf24;
       padding: 8px 12px;
       border-radius: 10px;
@@ -119,13 +131,11 @@
       padding: 10px 16px;
       border-radius: 10px;
       cursor: pointer;
-      font-size: 14px;
     }
   </style>
 </head>
 
 <body>
-
   <div class="app">
     <h2>AI Career Mentor</h2>
 
@@ -149,7 +159,9 @@
   </div>
 
   <script>
-    const BACKEND_URL = "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
+    const BACKEND_URL =
+      "https://ai-career-mentor-backend-axw0.onrender.com/api/career-advice";
+
     let selectedYear = 2;
 
     function setYear(year) {
@@ -168,11 +180,21 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function addAIMessage(text) {
+    function addAIResponse(summary, detailed) {
       const chat = document.getElementById("chat");
       const div = document.createElement("div");
       div.className = "ai-message";
-      div.innerText = text;
+
+      div.innerHTML = `
+        <div class="ai-title">🧠 Short Description</div>
+        ${summary}
+
+        <div class="ai-section">
+          <div class="ai-title">📘 Detailed Career Roadmap</div>
+          ${detailed}
+        </div>
+      `;
+
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     }
@@ -183,7 +205,6 @@
       div.className = "error-message";
       div.innerText = "Service is warming up. Please try again.";
       chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
     }
 
     async function sendMessage() {
@@ -208,19 +229,12 @@
         if (!res.ok) throw new Error();
 
         const data = await res.json();
-
-        addAIMessage(
-          "🧠 Short Description\n" +
-          data.summary +
-          "\n\n📘 Detailed Roadmap\n" +
-          data.detailed
-        );
+        addAIResponse(data.summary, data.detailed);
 
       } catch {
         addError();
       }
     }
   </script>
-
 </body>
 </html>
